@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import Nav from "./navBar";
+import Nav from "../components/navBar";
 import { NavLink, Outlet, useOutletContext } from "react-router-dom";
 import {
   setTitle,
@@ -10,7 +10,7 @@ import {
   setDescriptionError,
   setReceiverPhoneError,
   resetConfession,
-} from "./store/confessionSlice";
+} from "../store/confessionSlice";
 
 export function ViewConfessions() {
   const { phone } = useOutletContext();
@@ -191,33 +191,35 @@ function Home() {
   const phone = useSelector((state) => state.user.phone);
 
   return (
-    <div className="bg-black min-h-screen text-white p-10">
-      <div className="max-w-xl mx-auto grid gap-8">
-        <Nav />
-        {/* Tabs */}
-        <div className="flex bg-[#1a1a1a] rounded-full p-1 gap-1">
-          <NavLink
-            to="/home"
-            end
-            className={({ isActive }) =>
-              `flex-1 py-2 px-4 rounded-full text-sm font-medium text-center transition-all
+    <div>
+      <Nav />
+      <div className="bg-black min-h-screen text-white p-10">
+        <div className="max-w-xl mx-auto grid gap-8">
+          {/* Tabs */}
+          <div className="flex bg-[#1a1a1a] rounded-full p-1 gap-1">
+            <NavLink
+              to="/home"
+              end
+              className={({ isActive }) =>
+                `flex-1 py-2 px-4 rounded-full text-sm font-medium text-center transition-all
               ${isActive ? "bg-white text-black" : "text-gray-400 hover:text-white"}`
-            }
-          >
-            View Confessions
-          </NavLink>
-          <NavLink
-            to="/home/add"
-            className={({ isActive }) =>
-              `flex-1 py-2 px-4 rounded-full text-sm font-medium text-center transition-all
+              }
+            >
+              View Confessions
+            </NavLink>
+            <NavLink
+              to="/home/add"
+              className={({ isActive }) =>
+                `flex-1 py-2 px-4 rounded-full text-sm font-medium text-center transition-all
               ${isActive ? "bg-white text-black" : "text-gray-400 hover:text-white"}`
-            }
-          >
-            Add Confession
-          </NavLink>
-        </div>
+              }
+            >
+              Add Confession
+            </NavLink>
+          </div>
 
-        <Outlet context={{ phone }} />
+          <Outlet context={{ phone }} />
+        </div>
       </div>
     </div>
   );

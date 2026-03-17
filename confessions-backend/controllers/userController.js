@@ -56,6 +56,21 @@ exports.createUser = async (req, res) => {
   }
 };
 
+exports.updateName = async (req, res) => {
+  try {
+    const { phone, name } = req.body;
+    const user = await User.findOneAndUpdate(
+      { phone },
+      { name: name.trim().toLowerCase() },
+      { returnDocument: "after" },
+    );
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.json({ message: "Name updated", data: user });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
 exports.verifyOtp = async (req, res) => {
   const staticOtp = 123456;
 

@@ -6,7 +6,7 @@ import {
   setPhone,
   setNameError,
   setPhoneError,
-} from "./store/userSlice";
+} from "../store/userSlice";
 
 function Form() {
   const dispatch = useDispatch();

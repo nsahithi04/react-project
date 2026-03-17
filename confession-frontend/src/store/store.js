@@ -1,4 +1,4 @@
-import { configureStore } from "@reduxjs/toolkit";
+import { configureStore, combineReducers } from "@reduxjs/toolkit";
 import {
   persistStore,
   persistReducer,
@@ -10,24 +10,19 @@ import {
   REGISTER,
 } from "redux-persist";
 import storage from "redux-persist/lib/storage";
-import { combineReducers } from "@reduxjs/toolkit";
+import storageSession from "redux-persist/lib/storage/session";
 import userReducer from "./userSlice";
 import confessionReducer from "./confessionSlice";
-
-const persistConfig = {
-  key: "root",
-  storage,
-};
 
 const userPersistConfig = {
   key: "user",
   storage,
-  blacklist: ["nameError", "phoneError", "otpError"],
+  blacklist: ["nameError", "phoneError", "otpError", "otp"],
 };
 
 const confessionPersistConfig = {
   key: "confession",
-  storage,
+  storage: storageSession,
   blacklist: ["titleError", "descriptionError", "receiverPhoneError"],
 };
 
@@ -36,10 +31,8 @@ const rootReducer = combineReducers({
   confession: persistReducer(confessionPersistConfig, confessionReducer),
 });
 
-const persistedReducer = persistReducer(persistConfig, rootReducer);
-
 export const store = configureStore({
-  reducer: persistedReducer,
+  reducer: rootReducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {

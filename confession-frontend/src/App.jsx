@@ -1,9 +1,10 @@
 import React from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Form from "./form";
-import Otp from "./verifyOtp";
-import Home from "./home";
-import { ViewConfessions, AddConfession } from "./home";
+import Form from "./pages/form";
+import Otp from "./pages/verifyOtp";
+import Home from "./pages/home";
+import Profile from "./pages/Profile";
+import { ViewConfessions, AddConfession } from "./pages/home";
 
 const router = createBrowserRouter([
   { path: "/", element: <Form /> },
@@ -16,6 +17,7 @@ const router = createBrowserRouter([
       { path: "add", element: <AddConfession /> },
     ],
   },
+  { path: "/profile", element: <Profile /> },
 ]);
 
 function App() {

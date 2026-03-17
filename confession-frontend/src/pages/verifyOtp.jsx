@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { setOtp, setOtpError } from "./store/userSlice";
+import { setOtp, setOtpError } from "../store/userSlice";
 import { useNavigate } from "react-router-dom";
 
 function Otp() {
@@ -37,7 +37,14 @@ function Otp() {
   };
 
   return (
-    <div className="bg-black min-h-screen text-white flex items-center justify-center">
+    <div className="bg-black min-h-screen text-white flex flex-col items-center justify-center gap-20 text-center">
+      {/* Header */}
+      <div className="grid gap-1">
+        <h1 className="text-5xl font-semibold pb-4">Verify OTP</h1>
+        <p className="text-gray-400 text-lg">
+          Enter the OTP sent to your phone
+        </p>
+      </div>
       <form onSubmit={handleVerify} className="grid gap-6">
         <div>
           <input
@@ -46,13 +53,14 @@ function Otp() {
             onChange={(e) =>
               dispatch(setOtp(e.target.value.replace(/\D/g, "").slice(0, 6)))
             }
-            className="border p-4 rounded"
+            className="border-white rounded bg-transparent border outline-none p-4 text-white placeholder-gray-500"
           />
-          {otpError && <p className="text-red-500">{otpError}</p>}
+          {otpError && (
+            <p className="text-red-500 text-start pt-2">{otpError}</p>
+          )}
         </div>
-
         <button
-          className="text-xl p-5 border rounded-lg hover:bg-white hover:text-black "
+          className="border p-4 rounded text-sm hover:bg-white hover:text-black transition-all"
           type="submit"
         >
           Verify OTP
