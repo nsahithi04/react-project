@@ -12,6 +12,7 @@ function Form() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  const [showPassword, setShowPassword] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
@@ -120,7 +121,6 @@ function Form() {
               onChange={handleChange}
             />
           </div>
-
           <div>
             <p className="p-2">Email</p>
             <input
@@ -134,28 +134,45 @@ function Form() {
 
           <div>
             <p className="p-2">Password</p>
-            <input
-              name="password"
-              className="border border-white  p-4 rounded-lg text-xl bg-transparent text-white w-full"
-              placeholder="Password"
-              type="password"
-              value={formData.password}
-              onChange={handleChange}
-            />
+            <div className="relative">
+              <input
+                name="password"
+                className="border border-white p-4 rounded-lg text-xl bg-transparent text-white w-full"
+                placeholder="Password"
+                type={showPassword ? "text" : "password"}
+                value={formData.password}
+                onChange={handleChange}
+              />
+              <button
+                type="button"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
           </div>
 
           <div className={isLogin ? "hidden" : "block"}>
             <p className="p-2">Re-enter Password</p>
-            <input
-              name="confirmPassword"
-              className="border border-white  p-4 rounded-lg text-xl bg-transparent text-white w-full"
-              placeholder="Re-enter password"
-              type="password"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-            />
+            <div className="relative">
+              <input
+                name="confirmPassword"
+                className="border border-white p-4 rounded-lg text-xl bg-transparent text-white w-full"
+                placeholder="Re-enter password"
+                type={showPassword ? "text" : "password"}
+                value={formData.confirmPassword}
+                onChange={handleChange}
+              />
+              <button
+                type="button"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
           </div>
-
           {error && <p className="text-red-500">{error}</p>}
 
           <button
@@ -164,7 +181,6 @@ function Form() {
           >
             {isLogin ? "Login" : "Sign Up"}
           </button>
-
           <p
             className="text-gray-400 text-center text-sm cursor-pointer hover:text-white"
             onClick={() => {
