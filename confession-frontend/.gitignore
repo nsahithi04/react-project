@@ -5,7 +5,7 @@ node_modules/
 .env
 
 # Build output
-output/
+confession-frontend/output/
 
 # Firebase
 .firebase/
