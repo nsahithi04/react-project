@@ -1,30 +1,33 @@
 import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { logoutUser, setName } from "../store/userSlice";
+import { logoutUser, setUser } from "../store/userSlice";
 import { resetConfession } from "../store/confessionSlice";
 import { persistor } from "../store/store";
+import { signOut } from "firebase/auth";
+import { auth } from "../firebase";
 
 function Profile() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
+  const email = useSelector((state) => state.user.email);
   const name = useSelector((state) => state.user.name);
-  const phone = useSelector((state) => state.user.phone);
+  const uid = useSelector((state) => state.user.uid);
 
   const [editing, setEditing] = useState(false);
-  const [inputValue, setInputValue] = useState(name);
+  const [inputName, setInputName] = useState(name);
 
-  const handleSave = async () => {
+  const handleSaveName = async () => {
     try {
       const response = await fetch(`${process.env.API_URL}/users/update-name`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, name: inputValue }),
+        body: JSON.stringify({ uid, name: inputName }),
       });
       const data = await response.json();
-      console.log("Message:", data);
-      dispatch(setName(inputValue));
+      console.log("Updated:", data);
+      dispatch(setUser({ uid, email, name: inputName }));
       setEditing(false);
     } catch (error) {
       console.error("Error:", error);
@@ -32,6 +35,7 @@ function Profile() {
   };
 
   const handleLogout = async () => {
+    await signOut(auth);
     dispatch(logoutUser());
     dispatch(resetConfession());
     await persistor.purge();
@@ -42,8 +46,8 @@ function Profile() {
   return (
     <div className="bg-black min-h-screen text-white py-20 flex justify-center items-start">
       <div className="grid gap-10">
+        {/* Header */}
         <div className="flex justify-between items-center">
-          {/* Avatar */}
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -65,7 +69,7 @@ function Profile() {
             viewBox="0 0 24 24"
             strokeWidth={1.5}
             stroke="currentColor"
-            className="size-6"
+            className="size-6 cursor-pointer"
             onClick={() => navigate("/home")}
           >
             <path
@@ -76,15 +80,16 @@ function Profile() {
           </svg>
         </div>
 
-        {/* Name */}
+        {/* Name — editable */}
         <div className="grid gap-2">
           <h1 className="text-lg">Name</h1>
           <div className="text-gray-400 border border-gray-600 p-3 rounded-sm w-100 flex justify-between items-center">
             {editing ? (
               <input
-                className="bg-transparent text-white outline-none flex-1"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
+                className="bg-transparent text-white  flex-1"
+                value={inputName}
+                onChange={(e) => setInputName(e.target.value)}
+                autoFocus
               />
             ) : (
               <p>{name}</p>
@@ -97,7 +102,7 @@ function Profile() {
               strokeWidth="1.5"
               stroke={editing ? "white" : "currentColor"}
               className="size-6 cursor-pointer"
-              onClick={editing ? handleSave : () => setEditing(true)}
+              onClick={editing ? handleSaveName : () => setEditing(true)}
             >
               <path
                 strokeLinecap="round"
@@ -108,15 +113,15 @@ function Profile() {
           </div>
         </div>
 
-        {/* phone */}
+        {/* Email — read only */}
         <div className="grid gap-2">
-          <h1 className="text-lg">Phone</h1>
+          <h1 className="text-lg">Email</h1>
           <div className="border border-gray-600 p-3 rounded-sm w-100">
-            <p className="text-gray-400">{phone}</p>
+            <p className="text-gray-400">{email}</p>
           </div>
         </div>
 
-        {/* Button */}
+        {/* Logout */}
         <button
           onClick={handleLogout}
           className="mt-5 px-6 py-3 border w-fit border-gray-600 rounded-lg text-sm hover:bg-white hover:text-black transition-all"

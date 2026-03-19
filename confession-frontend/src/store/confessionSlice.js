@@ -5,11 +5,10 @@ const confessionSlice = createSlice({
   initialState: {
     title: "",
     description: "",
-    receiverPhone: "",
-    senderPhone: "",
+    receiverEmail: "",
     titleError: "",
     descriptionError: "",
-    receiverPhoneError: "",
+    receiverEmailError: "",
   },
   reducers: {
     setTitle: (state, action) => {
@@ -18,11 +17,8 @@ const confessionSlice = createSlice({
     setDescription: (state, action) => {
       state.description = action.payload;
     },
-    setReceiverPhone: (state, action) => {
-      state.receiverPhone = action.payload;
-    },
-    setSenderPhone: (state, action) => {
-      state.senderPhone = action.payload;
+    setReceiverEmail: (state, action) => {
+      state.receiverEmail = action.payload;
     },
     setTitleError: (state, action) => {
       state.titleError = action.payload;
@@ -30,16 +26,16 @@ const confessionSlice = createSlice({
     setDescriptionError: (state, action) => {
       state.descriptionError = action.payload;
     },
-    setReceiverPhoneError: (state, action) => {
-      state.receiverPhoneError = action.payload;
+    setReceiverEmailError: (state, action) => {
+      state.receiverEmailError = action.payload;
     },
     resetConfession: (state) => {
       state.title = "";
       state.description = "";
-      state.receiverPhone = "";
+      state.receiverEmail = "";
       state.titleError = "";
       state.descriptionError = "";
-      state.receiverPhoneError = "";
+      state.receiverEmailError = "";
     },
   },
 });
@@ -47,11 +43,10 @@ const confessionSlice = createSlice({
 export const {
   setTitle,
   setDescription,
-  setReceiverPhone,
-  setSenderPhone,
+  setReceiverEmail,
   setTitleError,
   setDescriptionError,
-  setReceiverPhoneError,
+  setReceiverEmailError,
   resetConfession,
 } = confessionSlice.actions;
 

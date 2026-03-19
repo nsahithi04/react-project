@@ -3,51 +3,23 @@ import { createSlice } from "@reduxjs/toolkit";
 const userSlice = createSlice({
   name: "user",
   initialState: {
+    email: "",
+    uid: "",
     name: "",
-    phone: "",
-    nameError: "",
-    phoneError: "",
-    otp: "",
-    otpError: "",
   },
   reducers: {
-    setName: (state, action) => {
-      state.name = action.payload;
-    },
-    setPhone: (state, action) => {
-      state.phone = action.payload;
-    },
-    setOtp: (state, action) => {
-      state.otp = action.payload;
-    },
-    setNameError: (state, action) => {
-      state.nameError = action.payload;
-    },
-    setPhoneError: (state, action) => {
-      state.phoneError = action.payload;
-    },
-    setOtpError: (state, action) => {
-      state.otpError = action.payload;
+    setUser: (state, action) => {
+      state.email = action.payload.email;
+      state.uid = action.payload.uid;
+      state.name = action.payload.name;
     },
     logoutUser: (state) => {
+      state.email = "";
+      state.uid = "";
       state.name = "";
-      state.phone = "";
-      state.otp = "";
-      state.nameError = "";
-      state.phoneError = "";
-      state.otpError = "";
     },
   },
 });
 
-export const {
-  setName,
-  setPhone,
-  setOtp,
-  setNameError,
-  setPhoneError,
-  setOtpError,
-  logoutUser,
-} = userSlice.actions;
-
+export const { setUser, logoutUser } = userSlice.actions;
 export default userSlice.reducer;

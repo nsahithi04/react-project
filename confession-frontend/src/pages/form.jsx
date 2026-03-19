@@ -1,65 +1,103 @@
 import React, { useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { auth } from "../firebase";
 import {
-  setName,
-  setPhone,
-  setNameError,
-  setPhoneError,
-} from "../store/userSlice";
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
+import { setUser } from "../store/userSlice";
 
 function Form() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const name = useSelector((state) => state.user.name);
-  const phone = useSelector((state) => state.user.phone);
-  const nameError = useSelector((state) => state.user.nameError);
-  const phoneError = useSelector((state) => state.user.phoneError);
+  const [isLogin, setIsLogin] = useState(true);
+  const [error, setError] = useState("");
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
 
-    let valid = true;
-
-    if (!name) {
-      dispatch(setNameError("Name is required"));
-      valid = false;
-    } else {
-      dispatch(setNameError(""));
+    if (!isLogin && formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
+      return;
     }
-
-    if (!phone) {
-      dispatch(setPhoneError("Phone number is required"));
-      valid = false;
-    } else if (phone.length !== 10) {
-      dispatch(setPhoneError("Phone must be 10 digits"));
-      valid = false;
-    } else {
-      dispatch(setPhoneError(""));
-    }
-
-    if (!valid) return;
-
-    const user = { name, phone };
 
     try {
-      const response = await fetch(`${process.env.API_URL}/users`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(user),
-      });
+      let userCredential;
 
-      const data = await response.json();
+      if (isLogin) {
+        userCredential = await signInWithEmailAndPassword(
+          auth,
+          formData.email,
+          formData.password,
+        );
 
-      console.log("Message:", data);
-      dispatch(setNameError(null));
-      dispatch(setPhoneError(null));
-      navigate("/otp");
+        // Fetch name from MongoDB
+        const res = await fetch(
+          `${process.env.API_URL}/users/${userCredential.user.uid}`,
+        );
+        const data = await res.json();
+
+        dispatch(
+          setUser({
+            uid: userCredential.user.uid,
+            email: userCredential.user.email,
+            name: data.name || "",
+          }),
+        );
+      } else {
+        userCredential = await createUserWithEmailAndPassword(
+          auth,
+          formData.email,
+          formData.password,
+        );
+
+        // Save to MongoDB
+        await fetch(`${process.env.API_URL}/users`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            uid: userCredential.user.uid,
+            name: formData.name,
+            email: userCredential.user.email,
+          }),
+        });
+
+        dispatch(
+          setUser({
+            uid: userCredential.user.uid,
+            email: userCredential.user.email,
+            name: formData.name,
+          }),
+        );
+      }
+
+      navigate("/home");
     } catch (error) {
-      console.error("Error:", error);
+      console.error(error.code);
+      if (error.code === "auth/invalid-credential")
+        setError("Invalid email or password");
+      else if (error.code === "auth/email-already-in-use")
+        setError("Email already in use");
+      else if (error.code === "auth/weak-password")
+        setError("Password must be at least 6 characters");
+      else if (error.code === "auth/invalid-email")
+        setError("Invalid email address");
+      else if (error.code === "auth/too-many-requests")
+        setError("Too many attempts. Please try again later.");
+      else setError("Something went wrong");
     }
   };
 
@@ -70,37 +108,80 @@ function Form() {
 
         <form
           onSubmit={handleSubmit}
-          className="grid gap-10 w-fit justify-self-center"
+          className="grid gap-5 w-100 justify-self-center"
         >
-          <div>
+          <div className={isLogin ? "hidden" : "block"}>
+            <p className="p-2">Name</p>
             <input
-              className="border p-5 rounded-lg text-xl"
+              name="name"
+              className="border border-white  p-4 rounded-lg text-xl bg-transparent text-white w-full"
               placeholder="Name"
-              value={name}
-              onChange={(e) => dispatch(setName(e.target.value))}
+              value={formData.name}
+              onChange={handleChange}
             />
-            {nameError && <p className="text-red-500">{nameError}</p>}
-          </div>
-          <div>
-            <input
-              className="border p-5 rounded-lg text-xl"
-              placeholder="Phone"
-              value={phone}
-              onChange={(e) =>
-                dispatch(
-                  setPhone(e.target.value.replace(/\D/g, "").slice(0, 10)),
-                )
-              }
-            />
-            {phoneError && <p className="text-red-500">{phoneError}</p>}
           </div>
 
+          <div>
+            <p className="p-2">Email</p>
+            <input
+              name="email"
+              className="border border-white  p-4 rounded-lg text-xl bg-transparent text-white w-full"
+              placeholder="Email"
+              value={formData.email}
+              onChange={handleChange}
+            />
+          </div>
+
+          <div>
+            <p className="p-2">Password</p>
+            <input
+              name="password"
+              className="border border-white  p-4 rounded-lg text-xl bg-transparent text-white w-full"
+              placeholder="Password"
+              type="password"
+              value={formData.password}
+              onChange={handleChange}
+            />
+          </div>
+
+          <div className={isLogin ? "hidden" : "block"}>
+            <p className="p-2">Re-enter Password</p>
+            <input
+              name="confirmPassword"
+              className="border border-white  p-4 rounded-lg text-xl bg-transparent text-white w-full"
+              placeholder="Re-enter password"
+              type="password"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+            />
+          </div>
+
+          {error && <p className="text-red-500">{error}</p>}
+
           <button
-            className="text-xl p-5 border rounded-lg hover:bg-white hover:text-black "
+            className="justify-self-center mt-10 text-xl py-3 px-20 w-fit border rounded-lg hover:bg-white hover:text-black"
             type="submit"
           >
-            Submit
+            {isLogin ? "Login" : "Sign Up"}
           </button>
+
+          <p
+            className="text-gray-400 text-center text-sm cursor-pointer hover:text-white"
+            onClick={() => {
+              setIsLogin(!isLogin);
+              setError("");
+              setFormData({
+                name: "",
+                email: "",
+                password: "",
+                confirmPassword: "",
+              });
+            }}
+          >
+            {isLogin
+              ? "Don't have an account? Sign up"
+              : "Already have an account? Login"}
+          </p>
         </form>
       </div>
     </div>

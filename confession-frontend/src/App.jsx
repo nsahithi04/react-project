@@ -1,23 +1,43 @@
 import React from "react";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import {
+  createBrowserRouter,
+  RouterProvider,
+  Navigate,
+} from "react-router-dom";
+import { useSelector } from "react-redux";
 import Form from "./pages/form";
-import Otp from "./pages/verifyOtp";
 import Home from "./pages/home";
 import Profile from "./pages/Profile";
-import { ViewConfessions, AddConfession } from "./pages/home";
+import { ViewConfessions, AddConfession, SentConfessions } from "./pages/home";
+
+function ProtectedRoute({ children }) {
+  const email = useSelector((state) => state.user.email);
+  return email ? children : <Navigate to="/" replace />;
+}
 
 const router = createBrowserRouter([
   { path: "/", element: <Form /> },
-  { path: "/otp", element: <Otp /> },
   {
     path: "/home",
-    element: <Home />,
+    element: (
+      <ProtectedRoute>
+        <Home />
+      </ProtectedRoute>
+    ),
     children: [
       { index: true, element: <ViewConfessions /> },
       { path: "add", element: <AddConfession /> },
+      { path: "sent", element: <SentConfessions /> },
     ],
   },
-  { path: "/profile", element: <Profile /> },
+  {
+    path: "/profile",
+    element: (
+      <ProtectedRoute>
+        <Profile />
+      </ProtectedRoute>
+    ),
+  },
 ]);
 
 function App() {

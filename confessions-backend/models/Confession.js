@@ -4,8 +4,8 @@ const confessionSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
     description: { type: String, required: true },
-    senderPhone: { type: String, required: true },
-    receiverPhone: { type: String, required: true },
+    senderEmail: { type: String, required: true },
+    receiverEmail: { type: String, required: true },
   },
   { timestamps: true },
 );

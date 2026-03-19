@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { setOtp, setOtpError } from "../store/userSlice";
 import { useNavigate } from "react-router-dom";
 
 function Otp() {
@@ -53,7 +52,7 @@ function Otp() {
             onChange={(e) =>
               dispatch(setOtp(e.target.value.replace(/\D/g, "").slice(0, 6)))
             }
-            className="border-white rounded bg-transparent border outline-none p-4 text-white placeholder-gray-500"
+            className="border-white rounded bg-transparent border  p-4 text-white placeholder-gray-500"
           />
           {otpError && (
             <p className="text-red-500 text-start pt-2">{otpError}</p>

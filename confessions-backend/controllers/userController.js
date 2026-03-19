@@ -1,5 +1,25 @@
 const User = require("../models/User");
 
+// Called after Firebase signup — stores user in MongoDB
+exports.createUser = async (req, res) => {
+  try {
+    const { uid, name, email } = req.body; // no password
+    const existing = await User.findOne({ uid });
+    if (existing)
+      return res.json({ message: "User already exists", data: existing });
+
+    const user = new User({
+      uid,
+      name: name.trim().toLowerCase(),
+      email: email.trim().toLowerCase(),
+    });
+    const saved = await user.save();
+    res.json({ message: "User created", data: saved });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
 exports.getUsers = async (req, res) => {
   try {
     const users = await User.find();
@@ -9,79 +29,26 @@ exports.getUsers = async (req, res) => {
   }
 };
 
-exports.createUser = async (req, res) => {
+exports.getUserByUid = async (req, res) => {
   try {
-    const name = req.body.name.trim().toLowerCase();
-    const phone = req.body.phone.trim();
-
-    let user = await User.findOne({ phone });
-
-    // If user already exists
-    if (user) {
-      // If name changed → update name
-      if (user.name !== name) {
-        user.name = name;
-        await user.save();
-
-        return res.json({
-          message: "Name updated",
-          data: user,
-          isNewUser: false,
-          updated: true,
-        });
-      }
-
-      // User exists and name is same
-      return res.json({
-        message: "User already exists",
-        data: user,
-        isNewUser: false,
-      });
-    }
-
-    // If user does not exist → create new user
-    user = new User({ name, phone });
-    const savedUser = await user.save();
-
-    return res.json({
-      message: "User created",
-      data: savedUser,
-      isNewUser: true,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Server error",
-      error: error.message,
-    });
-  }
-};
-
-exports.updateName = async (req, res) => {
-  try {
-    const { phone, name } = req.body;
-    const user = await User.findOneAndUpdate(
-      { phone },
-      { name: name.trim().toLowerCase() },
-      { returnDocument: "after" },
-    );
+    const user = await User.findOne({ uid: req.params.uid });
     if (!user) return res.status(404).json({ message: "User not found" });
-    res.json({ message: "Name updated", data: user });
+    res.json(user);
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
-exports.verifyOtp = async (req, res) => {
-  const staticOtp = 123456;
-
+exports.updateName = async (req, res) => {
   try {
-    const { otp } = req.body;
-
-    if (Number(otp) === staticOtp) {
-      return res.json({ success: true });
-    }
-
-    return res.json({ success: false, message: "Invalid OTP" });
+    const { uid, name } = req.body;
+    const user = await User.findOneAndUpdate(
+      { uid },
+      { name: name.trim().toLowerCase() },
+      { returnDocument: "after" },
+    );
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.json({ message: "Name updated", data: user });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
