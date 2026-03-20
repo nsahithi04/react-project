@@ -12,6 +12,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Create .env file
+        working-directory: confession-frontend
         run: |
           echo "FIREBASE_API_KEY=${{ secrets.FIREBASE_API_KEY }}" >> confession-frontend/.env
           echo "FIREBASE_AUTH_DOMAIN=${{ secrets.FIREBASE_AUTH_DOMAIN }}" >> confession-frontend/.env
