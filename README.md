@@ -1,24 +1,29 @@
 # Confession App
 
-A full-stack web app where users can register with their name and phone number, verify via OTP, and send anonymous confessions to other users by phone number.
+A full-stack web app where users can sign up or log in with email and password, and send anonymous confessions to other users by email.
 
 ---
 
 ## Tech Stack
 
-**Frontend:** React, Redux Toolkit, Redux Persist, React Router v7, Tailwind CSS, Webpack  
-**Backend:** Node.js, Express, MongoDB (Mongoose)
+**Frontend:** React, Redux Toolkit, Redux Persist, React Router v7, Tailwind CSS, Webpack, Firebase Auth  
+**Backend:** Node.js, Express, MongoDB (Mongoose)  
+**Auth:** Firebase Authentication  
+**Hosting:** Firebase Hosting (frontend), Render (backend)
 
 ---
 
 ## Features
 
-- Register / login with name and phone number
-- OTP verification (static OTP for now: `123456`)
-- Send confessions to other users by phone number
-- View confessions sent to your phone number
+- Sign up / login with email and password via Firebase Auth
+- Send anonymous confessions to other users by email
+- View confessions received in your inbox
+- View confessions you have sent
+- Edit your display name from your profile
 - Persistent login via localStorage (Redux Persist)
 - Logout clears all persisted state
+- Rate limiting on API routes to prevent abuse
+- Protected routes — unauthenticated users redirected to login
 
 ---
 
@@ -26,17 +31,20 @@ A full-stack web app where users can register with their name and phone number, 
 
 ```
 confessions_app/
-├── confession-frontend/     # React frontend
+├── confession-frontend/        # React frontend
 │   ├── public/
 │   │   └── index.html
 │   ├── src/
 │   │   ├── App.jsx
-│   │   ├── form.jsx         # Register/login form
-│   │   ├── verifyOtp.jsx    # OTP verification
-│   │   ├── home.jsx         # Home with tabs (view/add confessions)
-│   │   ├── navBar.jsx       # Nav with logout
-│   │   ├── index.jsx        # Entry point
-│   │   ├── styles.css       # Tailwind imports
+│   │   ├── firebase.js         # Firebase config
+│   │   ├── pages/
+│   │   │   ├── form.jsx        # Login / signup form
+│   │   │   ├── home.jsx        # Home with tabs
+│   │   │   └── Profile.jsx     # Profile page
+│   │   ├── components/
+│   │   │   └── navBar.jsx      # Nav with logout
+│   │   ├── index.jsx           # Entry point
+│   │   ├── styles.css          # Tailwind imports
 │   │   └── store/
 │   │       ├── store.js
 │   │       ├── userSlice.js
@@ -45,7 +53,7 @@ confessions_app/
 │   ├── tailwind.config.js
 │   └── package.json
 │
-└── confessions-backend/     # Express backend
+└── confessions-backend/        # Express backend
     ├── config/
     │   └── db.js
     ├── controllers/
@@ -68,6 +76,7 @@ confessions_app/
 - Node.js v18+
 - MongoDB (local or MongoDB Atlas)
 - npm
+- Firebase project with Email/Password authentication enabled
 
 ---
 
@@ -80,7 +89,14 @@ git clone https://github.com/nsahithi04/react-project
 cd confessions_app
 ```
 
-### 2. Backend Setup
+### 2. Firebase Setup
+
+1. Go to [Firebase Console](https://console.firebase.google.com)
+2. Create a new project or use an existing one
+3. Enable **Email/Password** authentication under Authentication → Sign-in method
+4. Copy your Firebase config from Project Settings → Your Apps
+
+### 3. Backend Setup
 
 ```bash
 cd confessions-backend
@@ -90,7 +106,6 @@ npm install
 Create a `.env` file in `confessions-backend/`:
 
 ```
-PORT=5000
 MONGO_URI=your_mongodb_connection_string
 ```
 
@@ -104,10 +119,10 @@ You should see:
 
 ```
 MongoDB connected
-Server running on port 5000
+Server running on port 3000
 ```
 
-### 3. Frontend Setup
+### 4. Frontend Setup
 
 ```bash
 cd confession-frontend
@@ -117,7 +132,13 @@ npm install
 Create a `.env` file in `confession-frontend/`:
 
 ```
-API_URL=http://localhost:5000
+API_URL=http://localhost:3000
+FIREBASE_API_KEY=your_firebase_api_key
+FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+FIREBASE_PROJECT_ID=your_project_id
+FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+FIREBASE_APP_ID=your_app_id
 ```
 
 Start the frontend:
@@ -132,42 +153,56 @@ App runs at `http://localhost:5173`
 
 ## API Endpoints
 
-| Method | Endpoint              | Description                        |
-| ------ | --------------------- | ---------------------------------- |
-| POST   | `/users`              | Register or login user             |
-| POST   | `/verify-otp`         | Verify OTP (static: `123456`)      |
-| POST   | `/confessions`        | Send a confession                  |
-| GET    | `/confessions/:phone` | Get confessions for a phone number |
+| Method | Endpoint                   | Description                                  |
+| ------ | -------------------------- | -------------------------------------------- |
+| POST   | `/users`                   | Create user in MongoDB after Firebase signup |
+| GET    | `/users/:uid`              | Get user by Firebase UID                     |
+| PUT    | `/users/update-name`       | Update display name                          |
+| POST   | `/confessions`             | Send a confession                            |
+| GET    | `/confessions/:email`      | Get confessions received                     |
+| GET    | `/sent-confessions/:email` | Get confessions sent                         |
 
 ---
 
 ## Usage
 
 1. Open `http://localhost:5173`
-2. Enter your name and phone number → click Submit
-3. Enter OTP `123456` → click Verify
-4. On the home screen:
-   - **View Confessions** — see confessions sent to your number
-   - **Add Confession** — send a confession to someone else's number
+2. Sign up with email and password
+3. On the home screen:
+   - **View Confessions** — see confessions sent to your email
+   - **Add Confession** — send a confession to someone else's email
+   - **Sent Confessions** — see confessions you have sent
+4. Click your profile icon to view/edit your name
 5. Click **Logout** to sign out
 
 ---
 
-## Notes
+## Deployment
 
-- OTP is currently static (`123456`). Replace with a real SMS service like Twilio for production.
-- User names are stored in lowercase with no spaces.
-- Confessions only return `title`, `description`, and `createdAt` — sender identity is hidden.
-- Redux Persist saves login state to localStorage so you stay logged in on reload.
+- **Frontend** → Firebase Hosting (`firebase deploy`)
+- **Backend** → Render (connect GitHub repo, set root to `confessions-backend`)
 
 ---
 
 ## Environment Variables
 
-| File                       | Variable    | Description                 |
-| -------------------------- | ----------- | --------------------------- |
-| `confessions-backend/.env` | `PORT`      | Port for the backend server |
-| `confessions-backend/.env` | `MONGO_URI` | MongoDB connection string   |
-| `confession-frontend/.env` | `API_URL`   | Backend API base URL        |
+| File                                             | Variable                       | Description                  |
+| ------------------------------------------------ | ------------------------------ | ---------------------------- |
+| `confessions-backend/.env`                       | `MONGO_URI`                    | MongoDB connection string    |
+| `confession-frontend/.env`                       | `API_URL`                      | Backend API base URL         |
+| `confession-frontend/.env`                       | `FIREBASE_API_KEY`             | Firebase API key             |
+| `confession-frontend/.env`                       | `FIREBASE_AUTH_DOMAIN`         | Firebase auth domain         |
+| `confession-frontend/.env` `FIREBASE_PROJECT_ID` | Firebase project ID            |
+| `confession-frontend/.env`                       | `FIREBASE_STORAGE_BUCKET`      | Firebase storage bucket      |
+| `confession-frontend/.env`                       | `FIREBASE_MESSAGING_SENDER_ID` | Firebase messaging sender ID |
+| `confession-frontend/.env`                       | `FIREBASE_APP_ID`              | Firebase app ID              |
 
-> **Never commit `.env` files.** Make sure they are in `.gitignore`.
+---
+
+## Notes
+
+- Firebase handles all authentication securely — passwords are never stored in MongoDB
+- MongoDB stores user profile data (name, email, Firebase UID)
+- Confessions only return `title`, `description`, and `createdAt` — sender identity is not exposed to the receiver
+- Rate limiting is applied to POST routes to prevent abuse
+- Redux Persist saves login state to localStorage so users stay logged in on reload
