@@ -66,7 +66,7 @@ function Form() {
         );
 
         // Save to MongoDB
-        await fetch(`${process.env.API_URL}/users`, {
+        const userRes = await fetch(`${process.env.API_URL}/users`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -75,6 +75,9 @@ function Form() {
             email: userCredential.user.email,
           }),
         });
+
+        const userData = await userRes.json();
+        console.log("User Created:", userData);
 
         dispatch(
           setUser({
