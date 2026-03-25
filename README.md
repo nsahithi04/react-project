@@ -1,5 +1,6 @@
 # Confession App
 
+deployed link: https://confessions-app-5721d.web.app/
 Send anonymous confessions to other users by email.
 
 ---
